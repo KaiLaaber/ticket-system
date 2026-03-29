@@ -14,7 +14,8 @@ async function loadTickets() {
             
             tickets.forEach(ticket => {
                 const ticketItem = document.createElement('li');
-                ticketItem.innerHTML = `<strong>${ticket.title}</strong><br>${ticket.description}`;
+                ticketItem.innerHTML = `<strong>${ticket.title}</strong>
+                <button onclick="deleteTicket(${ticket.id})">Delete</button><br>${ticket.description}`;
                 ticketList.appendChild(ticketItem);
             });
         }
@@ -41,7 +42,8 @@ async function addTicket() {
                 const ticket = await response.json();
                 const ticketList = document.getElementById('ticketList');
                 const ticketItem = document.createElement('li');
-                ticketItem.innerHTML = `<strong>${ticket.title}</strong><br>${ticket.description}`;
+                ticketItem.innerHTML = `<strong>${ticket.title}</strong>
+                <button onclick="deleteTicket(${ticket.id})">Delete</button><br>${ticket.description}`;
                 ticketList.appendChild(ticketItem);
 
                 document.getElementById('title').value = '';
@@ -49,6 +51,21 @@ async function addTicket() {
             }
         } catch (error) {
             console.error('Error adding ticket:', error);
+        }
+    }
+}
+
+async function deleteTicket(ticketId) {
+    if (ticketId) {
+        try {
+            const response = await fetch(`${BASE_URL}/tickets/${ticketId}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                await loadTickets();
+            }
+        } catch (error) {
+            console.error('Error deleting ticket:', error);
         }
     }
 }

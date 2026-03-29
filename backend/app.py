@@ -72,6 +72,16 @@ def add_ticket():
 
     return jsonify({'id': ticket_id, 'title': title, 'description': description, 'status': 'open', 'created_at': created_at}), 201
 
+@app.route('/tickets/<int:ticket_id>', methods=['DELETE'])
+def delete_ticket(ticket_id):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM tickets WHERE id = ?', (ticket_id,))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'message': 'Ticket deleted successfully'}), 200
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
