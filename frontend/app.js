@@ -4,6 +4,31 @@ window.onload = async function() {
     await loadTickets();
 };
 
+function getStatusColor(status) {
+    const s = (status || '').toLowerCase();
+    if (s === 'done') return '#22c55e';     // green
+    if (s === 'pending') return '#eab308';  // yellow
+    return '#ef4444';                       // red (open/default)
+}
+
+function createTicketItem(ticket) {
+    const color = getStatusColor(ticket.status);
+
+    const ticketItem = document.createElement('li');
+    ticketItem.innerHTML = `
+        <div class="statusDot" style="background-color: ${color};"></div>
+        <strong>${ticket.title}</strong>
+        <button onclick="deleteTicket(${ticket.id})">Delete</button>
+        <select onchange="updateTicket(${ticket.id}, this.value)">
+            <option value="open" ${ticket.status === 'open' ? 'selected' : ''}>Mark as Open</option>
+            <option value="pending" ${ticket.status === 'pending' ? 'selected' : ''}>Mark as Pending</option>
+            <option value="done" ${ticket.status === 'done' ? 'selected' : ''}>Mark as Done</option>
+        </select>
+        <br>${ticket.description}
+    `;
+    return ticketItem;
+}
+
 async function loadTickets() {
     try {
         const response = await fetch(`${BASE_URL}/tickets`);
@@ -13,10 +38,7 @@ async function loadTickets() {
             ticketList.innerHTML = '';
             
             tickets.forEach(ticket => {
-                const ticketItem = document.createElement('li');
-                ticketItem.innerHTML = `<strong>${ticket.title}</strong>
-                <button onclick="deleteTicket(${ticket.id})">Delete</button><br>${ticket.description}`;
-                ticketList.appendChild(ticketItem);
+                ticketList.appendChild(createTicketItem(ticket));
             });
         }
     } catch (error) {
@@ -41,10 +63,7 @@ async function addTicket() {
             if (response.ok) {
                 const ticket = await response.json();
                 const ticketList = document.getElementById('ticketList');
-                const ticketItem = document.createElement('li');
-                ticketItem.innerHTML = `<strong>${ticket.title}</strong>
-                <button onclick="deleteTicket(${ticket.id})">Delete</button><br>${ticket.description}`;
-                ticketList.appendChild(ticketItem);
+                ticketList.appendChild(createTicketItem(ticket));
 
                 document.getElementById('title').value = '';
                 document.getElementById('description').value = '';
@@ -54,6 +73,7 @@ async function addTicket() {
         }
     }
 }
+
 
 async function deleteTicket(ticketId) {
     if (ticketId) {
@@ -66,6 +86,25 @@ async function deleteTicket(ticketId) {
             }
         } catch (error) {
             console.error('Error deleting ticket:', error);
+        }
+    }
+}
+
+async function updateTicket(ticketId, newStatus) {
+    if (ticketId && newStatus) {
+        try {
+            const response = await fetch(`${BASE_URL}/tickets/${ticketId}/${newStatus}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            if (response.ok) {
+                await loadTickets();
+            }
+        } catch (error) {
+            console.error('Error updating ticket:', error);
         }
     }
 }

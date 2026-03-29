@@ -82,6 +82,24 @@ def delete_ticket(ticket_id):
 
     return jsonify({'message': 'Ticket deleted successfully'}), 200
 
+@app.route('/tickets/<int:ticket_id>/<string:status>', methods=['PUT'])
+def update_ticket(ticket_id, status):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM tickets WHERE id = ?', (ticket_id,))
+    ticket = cursor.fetchone()
+
+    if not ticket:
+        return jsonify({'error': 'Ticket not found'}), 404
+
+    cursor.execute(
+        'UPDATE tickets SET status = ? WHERE id = ?',
+        (status, ticket_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'id': ticket_id, 'title': ticket[1], 'description': ticket[2], 'status': status}), 200
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)

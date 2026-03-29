@@ -24,3 +24,13 @@ div{
     margin-top: 20px;
     border-radius: 5px;
 }
+
+.statusDot{
+    display: inline-block;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: #ad0202;
+    margin-right: 8px;
+    vertical-align: middle;
+}
