@@ -1,14 +1,54 @@
-function addTicket() {
+const BASE_URL = 'http://127.0.0.1:5000';
+
+window.onload = async function() {
+    await loadTickets();
+};
+
+async function loadTickets() {
+    try {
+        const response = await fetch(`${BASE_URL}/tickets`);
+        if (response.ok) {
+            const tickets = await response.json();
+            const ticketList = document.getElementById('ticketList');
+            ticketList.innerHTML = '';
+            
+            tickets.forEach(ticket => {
+                const ticketItem = document.createElement('li');
+                ticketItem.innerHTML = `<strong>${ticket.title}</strong><br>${ticket.description}`;
+                ticketList.appendChild(ticketItem);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading tickets:', error);
+    }
+}
+
+async function addTicket() {
     const title = document.getElementById('title').value;
     const description = document.getElementById('description').value;
 
     if (title && description) {
-        const ticketList = document.getElementById('ticketList');
-        const ticketItem = document.createElement('li');
-        ticketItem.innerHTML = `<strong>${title}</strong><br>${description}`;
-        ticketList.appendChild(ticketItem);
+        try {
+            const response = await fetch(`${BASE_URL}/tickets`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title, description })
+            });
 
-        document.getElementById('title').value = '';
-        document.getElementById('description').value = '';
+            if (response.ok) {
+                const ticket = await response.json();
+                const ticketList = document.getElementById('ticketList');
+                const ticketItem = document.createElement('li');
+                ticketItem.innerHTML = `<strong>${ticket.title}</strong><br>${ticket.description}`;
+                ticketList.appendChild(ticketItem);
+
+                document.getElementById('title').value = '';
+                document.getElementById('description').value = '';
+            }
+        } catch (error) {
+            console.error('Error adding ticket:', error);
+        }
     }
 }
